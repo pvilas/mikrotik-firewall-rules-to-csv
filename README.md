@@ -1,4 +1,4 @@
-# mikrotik-firewall-rules-to-csv
+# Mikrotik firewall rules to csv
 Transform mikrotik firewall rules into a csv easy manageable with an spreadsheet
 
 When you have a large number of rules on your firewall sometimes it's dificult to figure out what it is exactly doing. 
