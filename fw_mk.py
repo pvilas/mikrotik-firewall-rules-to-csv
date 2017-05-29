@@ -48,7 +48,6 @@ for l in flines:
         elif (not '"' in t) and (not in_quoted_str):
             # equal sign without continuation
             if t.endswith('='):
-                # print  ".\t{}".format(t)    
                 cad += t
             else:
                 cad = t
@@ -96,8 +95,3 @@ with open('mk-out.csv', 'wb') as csvfile:
                 g = t.split('=')
                 line[labels.index(g[0])] = g[1]
         w.writerow(line)
-
-"""
-for r in rules:
-    print "{}\n[{}]".format(r[0], r[1])
-"""
