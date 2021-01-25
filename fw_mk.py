@@ -53,8 +53,6 @@ for l in flines:
     rules.append([n, l, tokens])
     n += 1
 
-
-
 # extract different labels
 labels = {}
 for r in rules:
