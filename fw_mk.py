@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import csv
+import csv,re
 
 # format each rule in one single line and append it to flines
 
@@ -9,7 +9,7 @@ cad = ''
 n = 1
 with open('firewall.rsc') as fp:
     for line in fp:
-        line = line.rstrip()
+        line = line.strip()
         if line.endswith('\\'):
             # continuation
             cad += line[:-1]
@@ -23,7 +23,7 @@ with open('firewall.rsc') as fp:
             flines.append(cad)
         cad = ''
         n += 1
-
+print flines
 rules = []
 n = 1
 in_quoted_str = False
@@ -72,7 +72,7 @@ for l in labels:
 
 # create the csv
 with open('mk-out.csv', 'wb') as csvfile:
-    w = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    w = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     # write header
     w.writerow(labels)
 
@@ -88,5 +88,5 @@ with open('mk-out.csv', 'wb') as csvfile:
         for t in r[2]:
             if '=' in t:
                 g = t.split('=')
-                line[labels.index(g[0])] = g[1]
+                line[labels.index(g[0])] = re.sub(r'"$', '', re.sub(r'^"', '', g[1]))
         w.writerow(line)
