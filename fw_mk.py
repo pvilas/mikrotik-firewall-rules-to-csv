@@ -23,7 +23,7 @@ with open('firewall.rsc') as fp:
             flines.append(cad)
         cad = ''
         n += 1
-print flines
+
 rules = []
 n = 1
 in_quoted_str = False
