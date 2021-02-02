@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import csv
+import csv,re
 
 # format each rule in one single line and append it to flines
 
@@ -9,17 +9,19 @@ cad = ''
 n = 1
 with open('firewall.rsc') as fp:
     for line in fp:
-        if line.endswith('\\\n'):
-            cad += line[:len(line) - 2].strip() + ' '
+        line = line.strip()
+        if line.endswith('\\'):
+            # continuation
+            cad += line[:-1]
+            continue
+
+        cad += line
+        # print cad
+        if cad.startswith('#') or cad.startswith('/'):
+            print "{} ERROR: {}".format(n, cad)
         else:
-            cad += line[:len(line) - 1].strip()
-            cad = cad.replace('= ', '=')
-            # print cad
-            if cad.startswith('#'):
-                print "{} ERROR: {}".format(n, cad)
-            else:
-                flines.append(cad)
-            cad = ''
+            flines.append(cad)
+        cad = ''
         n += 1
 
 rules = []
@@ -27,33 +29,26 @@ n = 1
 in_quoted_str = False
 for l in flines:
     l = l.split(' ')
-    print "{} Analitzant {}".format(n, l)
+    print "{} Analyzing {}".format(n, l)
     n += 1
-    cad = ''
+    token_segments = []
     in_quoted_str = False
     tokens = []
     # for each token in list    
     for t in l:
         # if the token has double quotes, we find the closing
-        if (('"' in t) and (not t.endswith('"'))):
-            in_quoted_str = True
-            cad += t
-        elif t.endswith('"'):
-            in_quoted_str = False
-            cad += t
-            print "\t{}".format(cad)
-            cad = ''
-        elif (not '"' in t) and (in_quoted_str):
-            cad += t + ' '
-        elif (not '"' in t) and (not in_quoted_str):
-            # equal sign without continuation
-            if t.endswith('='):
-                cad += t
-            else:
-                cad = t
-                print "\t{}".format(cad)
-                tokens.append(cad)
-                cad = ''
+        if (t.count('"') == 1):
+            in_quoted_str = not in_quoted_str
+
+        token_segments.append(t)
+   
+        if not in_quoted_str:
+            # finalize token
+            token = ' '.join(token_segments)
+            print "\t{}".format(token)
+            tokens.append(token)
+            token_segments = []
+ 
 
     rules.append([n, l, tokens])
     n += 1
@@ -77,7 +72,7 @@ for l in labels:
 
 # create the csv
 with open('mk-out.csv', 'wb') as csvfile:
-    w = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    w = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     # write header
     w.writerow(labels)
 
@@ -93,5 +88,5 @@ with open('mk-out.csv', 'wb') as csvfile:
         for t in r[2]:
             if '=' in t:
                 g = t.split('=')
-                line[labels.index(g[0])] = g[1]
+                line[labels.index(g[0])] = re.sub(r'"$', '', re.sub(r'^"', '', g[1]))
         w.writerow(line)
